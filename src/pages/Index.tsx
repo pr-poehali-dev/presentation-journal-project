@@ -543,10 +543,6 @@ const Index = () => {
                   </div>
 
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      <Icon name="Download" size={16} className="mr-2" />
-                      Скачать
-                    </Button>
                     <Button size="sm">
                       <Icon name="BookOpen" size={16} className="mr-2" />
                       Режим чтения
