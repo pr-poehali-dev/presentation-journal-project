@@ -81,7 +81,7 @@ const Index = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-8">
-              <h1 className="text-2xl font-bold text-primary">Публикатор</h1>
+              <h1 className="text-2xl font-bold text-primary">ВСЕ СВОИ ВЫПУСКНЫЕ АЛЬБОМЫ</h1>
               <div className="hidden md:flex gap-6">
                 <Button 
                   variant={activeTab === 'home' ? 'default' : 'ghost'}
