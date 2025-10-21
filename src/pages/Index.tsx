@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
 import HomeTab from '@/components/HomeTab';
 import LibraryTab from '@/components/LibraryTab';
@@ -9,14 +10,16 @@ import { mockPublications } from '@/data/mockPublications';
 import { Publication } from '@/types/publication';
 
 const Index = () => {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('home');
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedPublication, setSelectedPublication] = useState<Publication | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [publications, setPublications] = useState<Publication[]>(mockPublications);
 
-  const filteredPublications = mockPublications.filter(pub =>
+  const filteredPublications = publications.filter(pub =>
     pub.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     pub.author.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -31,7 +34,13 @@ const Index = () => {
         setUploadProgress(prev => {
           if (prev >= 100) {
             clearInterval(interval);
-            setTimeout(() => setIsUploading(false), 500);
+            setTimeout(() => {
+              setIsUploading(false);
+              toast({
+                title: 'Успешно загружено!',
+                description: `Файл "${file.name}" был успешно загружен.`,
+              });
+            }, 500);
             return 100;
           }
           return prev + 10;
@@ -40,12 +49,32 @@ const Index = () => {
     }
   };
 
+  const handleEditPublication = (updatedPub: Publication) => {
+    setPublications(publications.map(pub => 
+      pub.id === updatedPub.id ? updatedPub : pub
+    ));
+    toast({
+      title: 'Изменения сохранены',
+      description: `Публикация "${updatedPub.title}" обновлена.`,
+    });
+  };
+
+  const handleDeletePublication = (id: number) => {
+    const pubToDelete = publications.find(p => p.id === id);
+    setPublications(publications.filter(pub => pub.id !== id));
+    toast({
+      title: 'Публикация удалена',
+      description: pubToDelete ? `"${pubToDelete.title}" была удалена.` : 'Публикация удалена.',
+      variant: 'destructive',
+    });
+  };
+
   const handlePublicationClick = (pub: Publication) => {
     setSelectedPublication(pub);
     setCurrentPage(0);
   };
 
-  const myPublications = mockPublications.slice(0, 3);
+  const myPublications = publications.slice(0, 3);
   const totalViews = myPublications.reduce((sum, pub) => sum + pub.views, 0);
 
   return (
@@ -63,7 +92,7 @@ const Index = () => {
       <main className="container mx-auto px-6 py-12">
         {activeTab === 'home' && (
           <HomeTab 
-            publications={mockPublications}
+            publications={publications}
             onPublicationClick={handlePublicationClick}
             onViewAllClick={() => setActiveTab('library')}
           />
@@ -82,6 +111,8 @@ const Index = () => {
           <ProfileTab 
             myPublications={myPublications}
             totalViews={totalViews}
+            onEditPublication={handleEditPublication}
+            onDeletePublication={handleDeletePublication}
           />
         )}
 

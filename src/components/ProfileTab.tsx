@@ -1,14 +1,44 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
 import { Publication } from '@/types/publication';
+import EditPublicationDialog from './EditPublicationDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 type ProfileTabProps = {
   myPublications: Publication[];
   totalViews: number;
+  onEditPublication: (pub: Publication) => void;
+  onDeletePublication: (id: number) => void;
 };
 
-const ProfileTab = ({ myPublications, totalViews }: ProfileTabProps) => {
+const ProfileTab = ({ myPublications, totalViews, onEditPublication, onDeletePublication }: ProfileTabProps) => {
+  const [editingPublication, setEditingPublication] = useState<Publication | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const handleEdit = (pub: Publication) => {
+    setEditingPublication(pub);
+  };
+
+  const handleSaveEdit = (pub: Publication) => {
+    onEditPublication(pub);
+    setEditingPublication(null);
+  };
+
+  const handleDelete = (id: number) => {
+    onDeletePublication(id);
+    setDeletingId(null);
+  };
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
@@ -82,11 +112,11 @@ const ProfileTab = ({ myPublications, totalViews }: ProfileTabProps) => {
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => handleEdit(pub)}>
                     <Icon name="Edit" size={16} className="mr-2" />
                     Редактировать
                   </Button>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={() => setDeletingId(pub.id)}>
                     <Icon name="Trash2" size={16} />
                   </Button>
                 </div>
@@ -95,6 +125,30 @@ const ProfileTab = ({ myPublications, totalViews }: ProfileTabProps) => {
           </div>
         </CardContent>
       </Card>
+
+      <EditPublicationDialog 
+        publication={editingPublication}
+        open={!!editingPublication}
+        onClose={() => setEditingPublication(null)}
+        onSave={handleSaveEdit}
+      />
+
+      <AlertDialog open={!!deletingId} onOpenChange={(open) => !open && setDeletingId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Удалить публикацию?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Это действие нельзя отменить. Публикация будет удалена навсегда.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction onClick={() => deletingId && handleDelete(deletingId)}>
+              Удалить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
