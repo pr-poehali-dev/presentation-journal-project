@@ -16,12 +16,25 @@ type Publication = {
   views: number;
   pages: number;
   uploadDate: string;
+  pageImages?: string[];
 };
 
 const mockPublications: Publication[] = [
-  { id: 1, title: 'Современная архитектура', author: 'Анна Иванова', cover: 'https://cdn.poehali.dev/projects/a66ab3ef-73fa-4588-b056-cd5f09a4fc14/files/85d83704-7fe6-4aa3-903d-468fbcea79e0.jpg', category: 'Журнал', views: 12453, pages: 48, uploadDate: '2024-10-15' },
-  { id: 2, title: 'Цифровой маркетинг 2024', author: 'Михаил Петров', cover: 'https://cdn.poehali.dev/projects/a66ab3ef-73fa-4588-b056-cd5f09a4fc14/files/6dcf5ab5-b954-41a4-a8dd-59e3b1497031.jpg', category: 'Книга', views: 8932, pages: 156, uploadDate: '2024-10-12' },
-  { id: 3, title: 'Дизайн интерьеров', author: 'Елена Смирнова', cover: 'https://cdn.poehali.dev/projects/a66ab3ef-73fa-4588-b056-cd5f09a4fc14/files/1c38f8f4-7a57-4a50-bebe-a84dca0f1bd2.jpg', category: 'Журнал', views: 15678, pages: 64, uploadDate: '2024-10-18' },
+  { id: 1, title: 'Современная архитектура', author: 'Анна Иванова', cover: 'https://cdn.poehali.dev/projects/a66ab3ef-73fa-4588-b056-cd5f09a4fc14/files/85d83704-7fe6-4aa3-903d-468fbcea79e0.jpg', category: 'Журнал', views: 12453, pages: 48, uploadDate: '2024-10-15', pageImages: [
+    'https://cdn.poehali.dev/projects/a66ab3ef-73fa-4588-b056-cd5f09a4fc14/files/ecd4396a-7bb9-4ed0-84c1-47fb8ea2e3f7.jpg',
+    'https://cdn.poehali.dev/projects/a66ab3ef-73fa-4588-b056-cd5f09a4fc14/files/ecd4396a-7bb9-4ed0-84c1-47fb8ea2e3f7.jpg',
+    'https://cdn.poehali.dev/projects/a66ab3ef-73fa-4588-b056-cd5f09a4fc14/files/ecd4396a-7bb9-4ed0-84c1-47fb8ea2e3f7.jpg'
+  ] },
+  { id: 2, title: 'Цифровой маркетинг 2024', author: 'Михаил Петров', cover: 'https://cdn.poehali.dev/projects/a66ab3ef-73fa-4588-b056-cd5f09a4fc14/files/6dcf5ab5-b954-41a4-a8dd-59e3b1497031.jpg', category: 'Книга', views: 8932, pages: 156, uploadDate: '2024-10-12', pageImages: [
+    'https://cdn.poehali.dev/projects/a66ab3ef-73fa-4588-b056-cd5f09a4fc14/files/2ec1d58c-7e22-42ef-912d-aa29e3d54937.jpg',
+    'https://cdn.poehali.dev/projects/a66ab3ef-73fa-4588-b056-cd5f09a4fc14/files/2ec1d58c-7e22-42ef-912d-aa29e3d54937.jpg',
+    'https://cdn.poehali.dev/projects/a66ab3ef-73fa-4588-b056-cd5f09a4fc14/files/2ec1d58c-7e22-42ef-912d-aa29e3d54937.jpg'
+  ] },
+  { id: 3, title: 'Дизайн интерьеров', author: 'Елена Смирнова', cover: 'https://cdn.poehali.dev/projects/a66ab3ef-73fa-4588-b056-cd5f09a4fc14/files/1c38f8f4-7a57-4a50-bebe-a84dca0f1bd2.jpg', category: 'Журнал', views: 15678, pages: 64, uploadDate: '2024-10-18', pageImages: [
+    'https://cdn.poehali.dev/projects/a66ab3ef-73fa-4588-b056-cd5f09a4fc14/files/d25e7586-e50c-4ba4-90cc-1077fe18a445.jpg',
+    'https://cdn.poehali.dev/projects/a66ab3ef-73fa-4588-b056-cd5f09a4fc14/files/d25e7586-e50c-4ba4-90cc-1077fe18a445.jpg',
+    'https://cdn.poehali.dev/projects/a66ab3ef-73fa-4588-b056-cd5f09a4fc14/files/d25e7586-e50c-4ba4-90cc-1077fe18a445.jpg'
+  ] },
   { id: 4, title: 'Кулинарные путешествия', author: 'Дмитрий Волков', cover: '/placeholder.svg', category: 'Журнал', views: 9234, pages: 52, uploadDate: '2024-10-10' },
   { id: 5, title: 'Руководство по фотографии', author: 'Ольга Козлова', cover: '/placeholder.svg', category: 'Книга', views: 11567, pages: 200, uploadDate: '2024-10-08' },
   { id: 6, title: 'Технологии будущего', author: 'Сергей Новиков', cover: '/placeholder.svg', category: 'Журнал', views: 13456, pages: 72, uploadDate: '2024-10-20' },
@@ -32,6 +45,8 @@ const Index = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedPublication, setSelectedPublication] = useState<Publication | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
 
   const filteredPublications = mockPublications.filter(pub =>
     pub.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -181,7 +196,7 @@ const Index = () => {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {mockPublications.slice(0, 6).map((pub) => (
-                  <Card key={pub.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
+                  <Card key={pub.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group" onClick={() => { setSelectedPublication(pub); setCurrentPage(0); }}>
                     <div className="aspect-[3/4] bg-muted relative overflow-hidden">
                       <img src={pub.cover} alt={pub.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       <Badge className="absolute top-3 right-3">{pub.category}</Badge>
@@ -232,7 +247,7 @@ const Index = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {filteredPublications.map((pub) => (
-                <Card key={pub.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group">
+                <Card key={pub.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group" onClick={() => { setSelectedPublication(pub); setCurrentPage(0); }}>
                   <div className="aspect-[3/4] bg-muted relative overflow-hidden">
                     <img src={pub.cover} alt={pub.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     <Badge className="absolute top-3 right-3">{pub.category}</Badge>
@@ -446,6 +461,103 @@ const Index = () => {
           </div>
         )}
       </main>
+
+      {selectedPublication && selectedPublication.pageImages && (
+        <Dialog open={!!selectedPublication} onOpenChange={(open) => !open && setSelectedPublication(null)}>
+          <DialogContent className="max-w-6xl h-[90vh] p-0">
+            <div className="flex flex-col h-full">
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <div>
+                  <h3 className="font-semibold text-lg">{selectedPublication.title}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedPublication.author}</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-sm text-muted-foreground">
+                    Страница {currentPage + 1} из {selectedPublication.pageImages.length}
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedPublication(null)}>
+                    <Icon name="X" size={20} />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex-1 relative bg-muted/20 overflow-hidden">
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <img 
+                    src={selectedPublication.pageImages[currentPage]} 
+                    alt={`Страница ${currentPage + 1}`}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 bg-background/80 backdrop-blur-sm hover:bg-background"
+                  onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+                  disabled={currentPage === 0}
+                >
+                  <Icon name="ChevronLeft" size={24} />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 bg-background/80 backdrop-blur-sm hover:bg-background"
+                  onClick={() => setCurrentPage(prev => Math.min(selectedPublication.pageImages!.length - 1, prev + 1))}
+                  disabled={currentPage === selectedPublication.pageImages.length - 1}
+                >
+                  <Icon name="ChevronRight" size={24} />
+                </Button>
+              </div>
+
+              <div className="p-4 border-t border-border bg-card">
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Icon name="ZoomIn" size={16} className="mr-2" />
+                      Увеличить
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Icon name="Bookmark" size={16} className="mr-2" />
+                      Закладка
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Icon name="Share2" size={16} className="mr-2" />
+                      Поделиться
+                    </Button>
+                  </div>
+                  
+                  <div className="flex gap-1">
+                    {selectedPublication.pageImages.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentPage(index)}
+                        className={`h-2 rounded-full transition-all ${
+                          index === currentPage 
+                            ? 'w-8 bg-primary' 
+                            : 'w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm">
+                      <Icon name="Download" size={16} className="mr-2" />
+                      Скачать
+                    </Button>
+                    <Button size="sm">
+                      <Icon name="BookOpen" size={16} className="mr-2" />
+                      Режим чтения
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
